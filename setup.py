@@ -10,7 +10,7 @@ extra_compile_args = []
 extra_link_args = []
 
 # Only compile with OpenMP if user asks for it
-USE_OPENMP = os.environ.get('USE_OPENMP', False)
+USE_OPENMP = os.environ.get('USE_OPENMP', True)
 if USE_OPENMP:
     extra_compile_args.append('-fopenmp')
     extra_link_args.append('-fopenmp')
@@ -29,9 +29,6 @@ for e in ext_modules:
 setup(name='pyhawkes',
       version='0.3.1',
       description='Bayesian inference for network Hawkes processes',
-      author='Scott Linderman',
-      author_email='scott.linderman@gmail.com',
-      url='http://www.github.com/slinderman/pyhawkes',
       ext_modules=ext_modules,
       install_requires=['numpy', 'scipy', 'matplotlib',
                         'joblib', 'scikit-learn', 'pybasicbayes'],
