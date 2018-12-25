@@ -65,7 +65,7 @@ def assembleData(directory):
                     # print(spkLen)
                     if arrSize.size > 0:
                         df = pd.DataFrame(spk[0][0][iter0][iter2])
-                        if sum(df.sum()) > 1000:
+                        if sum(df.sum()) > 7000:
                             tmp = df  # .iloc[:,0:3799]
                             colName = generatorTemp(tmp.shape[1])
                             tmp.columns = colName

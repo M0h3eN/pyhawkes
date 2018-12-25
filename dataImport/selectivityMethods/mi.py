@@ -1,7 +1,5 @@
-from commons.basicFunctions import computeFr, conditionSelect, np, pd, gridplot,\
- figure, ColumnDataSource, computeSpikeCount
+from dataImport.commons.basicFunctions import  conditionSelect, np, pd, figure, computeSpikeCount
 from scipy.stats import entropy
-from bokeh.palettes import Reds4, Blues4, Greens4, Oranges4
 import plotly.graph_objs as go
 import plotly.io as pio
 
@@ -204,45 +202,3 @@ def plotBarGraphCentralityCompare(DF, mostCenIndex, file_name):
 
     fig = go.Figure(data=data, layout=layout)
     pio.write_image(fig, str(file_name) + '.svg')
-    
-
-
-'''
-def plotTrend(DF):
-    x = pd.DataFrame(data=np.linspace(1, len(DF), 11), columns=['x'])
-    source = ColumnDataSource(pd.concat([DF, x], axis=1))
-    p1 = figure(title="MI between in and out for all neurons",
-                toolbar_location=None,
-                x_axis_label="Neuron",
-                y_axis_label="Mutual information(bit)",
-                sizing_mode='stretch_both')
-    p1.line(x='x', y="MI_InRfWithStim", color=Reds4[0],
-            line_width=2, line_alpha=0.6, source=source,
-            legend="With stimmulation")
-    # p1.line(x = 'x',y = "MI_OutRfWithStim", color = Oranges4[0],
-    #  line_width=2, line_alpha=0.6, source = source,
-    # legend="Outside the receptive field with stimmulation")
-    p1.line(x='x', y="MI_InRfWithoutStim", color=Blues4[0],
-            line_width=2, line_alpha=0.6, source=source,
-            legend="Without stimmulation")
-    # p1.line(x = 'x',y = "MI_OutRfWithoutStim", color = Greens4[0],
-    #  line_width=2, line_alpha=0.6, source = source,
-    # legend="Outside the receptive field without stimmulation")
-    return p1
-
-
-def plotAllHist(DF):
-    pl0 = plotHist(DF, "With stimmulation",
-                   "MI_InRfWithStim")
-    pl1 = plotHist(DF, "Without stimmulation",
-                   "MI_InRfWithoutStim")
-    # pl2 = plotHist(DF, "Outside the receptive field with stimmulation",
-    #    "MI_OutRfWithStim")
-    # pl3 = plotHist(DF, "Outside the receptive field without stimmulation",
-    #    "MI_OutRfWithoutStim")
-    grid = gridplot([pl0, pl1], ncols=2,
-                    sizing_mode='stretch_both', toolbar_location=None)
-    return grid
-
-
-'''
