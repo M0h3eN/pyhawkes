@@ -10,7 +10,7 @@ extra_compile_args = []
 extra_link_args = []
 
 # Only compile with OpenMP if user asks for it
-USE_OPENMP = os.environ.get('USE_OPENMP', True)
+USE_OPENMP = True
 if USE_OPENMP:
     extra_compile_args.append('-fopenmp')
     extra_link_args.append('-fopenmp')
@@ -33,5 +33,5 @@ setup(name='pyhawkes',
       install_requires=['numpy', 'scipy', 'matplotlib',
                         'joblib', 'scikit-learn', 'pybasicbayes'],
       include_dirs=[np.get_include(),],
-      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils']
+      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'dataImport']
      )

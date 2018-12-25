@@ -9,7 +9,7 @@ from pyhawkes.models import DiscreteTimeNetworkHawkesModelSpikeAndSlab
 
 np.random.seed(0)
 
-def demo(K=3, T=1000, dt_max=20, p=0.25):
+def demo(K=20, T=3000, dt_max=35, p=0.4):
     """
 
     :param K:       Number of nodes
