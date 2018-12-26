@@ -41,11 +41,10 @@ def plot_network(G, figname):
 
     dc = nx.degree_centrality(G)
     a1, a2 = zip(*dc.items())
+
     # displays the graph without axis
     plt.axis('off')
     # saves image
-    # plt.savefig("part3.png", format="PNG")
-    plt.savefig('Network-' + figname + '.svg', format='svg', dpi=1200)
-    # fv = np.array([nodelist, node_sizes]).transpose()
-    # fv[:,0][fv[:,1] == fv[:,1].max()],
-    return np.argmax(a2), plt.show()
+    plt.savefig(figname + '.svg', format='svg', dpi=1200)
+    # , plt.show()
+    return np.argmax(a2)
