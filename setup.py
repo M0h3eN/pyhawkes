@@ -33,5 +33,5 @@ setup(name='pyhawkes',
       install_requires=['numpy', 'scipy', 'matplotlib',
                         'joblib', 'scikit-learn', 'pybasicbayes'],
       include_dirs=[np.get_include(),],
-      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'dataImport']
+      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'dataImport', 'graphistician']
      )

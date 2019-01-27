@@ -10,3 +10,8 @@ it is a fork from linderman pyhawkes for further analysis on network
 
 *  npm install --unsafe-perm -g phantomjs-prebuilt
 *  npm install --unsafe-perm -g electron@1.8.4 orca
+
+
+# Compile setup.py file
+
+add 'build_ext --inplace' argument to setup.py 
