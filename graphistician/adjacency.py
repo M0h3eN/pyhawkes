@@ -5,8 +5,8 @@ with fixed probability or a beta-Bernoulli model.
 import numpy as np
 from scipy.stats import beta
 
-from abstractions import AdjacencyDistribution
-from internals.utils import logistic
+from graphistician.abstractions import AdjacencyDistribution
+from graphistician.internals.utils import logistic
 
 from pybasicbayes.abstractions import GibbsSampling
 
@@ -328,8 +328,8 @@ class LatentDistanceAdjacencyDistribution(AdjacencyDistribution, GibbsSampling):
         # Scatter plot the node embeddings
         ax.plot(L[:,0], L[:,1], 's', color=color, markerfacecolor=color, markeredgecolor=color)
         # Plot the edges between nodes
-        for n1 in xrange(self.N):
-            for n2 in xrange(self.N):
+        for n1 in range(self.N):
+            for n2 in range(self.N):
                 if A[n1,n2]:
                     ax.plot([L[n1,0], L[n2,0]],
                             [L[n1,1], L[n2,1]],
@@ -627,8 +627,8 @@ class SBMAdjacencyDistribution(AdjacencyDistribution, GibbsSampling):
                 mask &= True - np.eye(self.N, dtype=np.bool)
             return mask
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 mask = _get_mask(c1, c2)
                 n_conns   = sum([A[mask].sum() for A in As])
                 n_noconns = sum([(1 - A[mask]).sum() for A in As])
@@ -658,7 +658,7 @@ class SBMAdjacencyDistribution(AdjacencyDistribution, GibbsSampling):
             return
 
         # Sample each assignment in order
-        for n1 in xrange(self.N):
+        for n1 in range(self.N):
             # Compute unnormalized log probs of each connection
             lp = np.zeros(self.C)
 
@@ -666,10 +666,10 @@ class SBMAdjacencyDistribution(AdjacencyDistribution, GibbsSampling):
             lp += np.log(self.m)
 
             # Likelihood from network
-            for cn1 in xrange(self.C):
+            for cn1 in range(self.C):
 
                 # Compute probability for each incoming and outgoing
-                for n2 in xrange(self.N):
+                for n2 in range(self.N):
                     cn2 = self.c[n2]
 
                     if n2 == n1:

@@ -154,8 +154,8 @@ class _StochasticBlockModelBase(NetworkDistribution):
         A = np.zeros((self.N, self.N))
         W = np.zeros((self.N, self.N, self.B))
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 blk = (self.c==c1)[:,None] * (self.c==c2)[None,:]
                 A[blk] = np.random.rand(blk.sum()) < self.p[c1,c2]
                 W[blk,:] = self.weight_models[c1][c2].rvs(size=blk.sum())
@@ -218,8 +218,8 @@ class _GibbsSBM(_StochasticBlockModelBase):
         W = network.W
 
         # Resample weight models
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 c1_and_c2 = (self.c==c1)[:,None] * (self.c==c2)[None, :]
                 subnet = FixedGaussianNetwork(A * c1_and_c2, W)
                 # Wc1c2 = np.vstack([W[c1_and_c2, :] for W in Ws])
@@ -233,8 +233,8 @@ class _GibbsSBM(_StochasticBlockModelBase):
         """
         Resample p given observations of the weights
         """
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
 
                 n_conns   = sum([A[np.ix_(self.c==c1, self.c==c2)].sum()
                                  for A in As])
@@ -261,7 +261,7 @@ class _GibbsSBM(_StochasticBlockModelBase):
         W = network.W
 
         # Sample each assignment in order
-        for n1 in xrange(self.N):
+        for n1 in range(self.N):
             # Compute unnormalized log probs of each connection
             lp = np.zeros(self.C)
 
@@ -269,10 +269,10 @@ class _GibbsSBM(_StochasticBlockModelBase):
             lp += np.log(self.m)
 
             # Likelihood from network
-            for cn1 in xrange(self.C):
+            for cn1 in range(self.C):
 
                 # Compute probability for each incoming and outgoing
-                for n2 in xrange(self.N):
+                for n2 in range(self.N):
                     cn2 = self.c[n2]
 
                     if n2 != n1:
@@ -337,8 +337,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         # Update the probability of each block
         self.mf_update_m()
         # Update the weight models
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 pc1c2 = self.mf_m[:,c1][:,None] * self.mf_m[:,c2][None, :]
                 mf_weights = network.E_A * pc1c2
                 self.weight_models[c1][c2].meanfieldupdate(network, weights=mf_weights)
@@ -350,8 +350,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         self.mf_update_c(network, stepsize=stepsize)
 
         # Update the weight models
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 pc1c2 = self.mf_m[:,c1][:,None] * self.mf_m[:,c2][None, :]
                 self.weight_models[c1][c2].meanfieldupdate(network, pc1c2, stepsize=stepsize)
 
@@ -371,8 +371,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         """
         E_A = network.E_A
         E_notA =  1 - E_A
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 # Get the KxK matrix of joint class assignment probabilities
                 pc1c2 = self.mf_m[:,c1][:, None] * self.mf_m[:,c2][None, :]
 
@@ -398,7 +398,7 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         E_A    = network.E_A
         E_notA = 1 - network.E_A
         # Sample each assignment in order
-        for n1 in xrange(self.N):
+        for n1 in range(self.N):
             # Compute unnormalized log probs of each connection
             lp = np.zeros(self.C)
 
@@ -406,11 +406,11 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
             lp += self.mf_expected_log_m()
 
             # Iterate over possible block assignments
-            for cn1 in xrange(self.C):
+            for cn1 in range(self.C):
 
                 # Likelihood from each edge in the network
-                for n2 in xrange(self.N):
-                    for cn2 in xrange(self.C):
+                for n2 in range(self.N):
+                    for cn2 in range(self.C):
                         pcn2 = self.mf_m[n2, cn2]
 
                         p_pn1n2 = Beta(self.mf_tau1[cn1,cn2], self.mf_tau0[cn1, cn2])
@@ -460,8 +460,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         :return:
         """
         E_p = np.zeros((self.N, self.N))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 # Get the KxK matrix of joint class assignment probabilities
                 pc1c2 = self.mf_m[:,c1][:, None] * self.mf_m[:,c2][None, :]
 
@@ -486,8 +486,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         :return:
         """
         E_ln_p = np.zeros((self.N, self.N))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 # Get the KxK matrix of joint class assignment probabilities
                 pc1c2 = self.mf_m[:,c1][:, None] * self.mf_m[:,c2][None, :]
 
@@ -505,8 +505,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         :return:
         """
         E_ln_notp = np.zeros((self.N, self.N))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 # Get the KxK matrix of joint class assignment probabilities
                 pc1c2 = self.mf_m[:,c1][:, None] * self.mf_m[:,c2][None, :]
 
@@ -538,7 +538,7 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
 
         # Get the VLB of the expected class assignments
         E_ln_m = self.mf_expected_log_m()
-        for n in xrange(self.N):
+        for n in range(self.N):
             # Add the cross entropy of p(c | m)
             vlb += Discrete().negentropy(E_x=self.mf_m[n,:], E_ln_p=E_ln_m)
 
@@ -561,8 +561,8 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         # Subtract the negative entropy of q(m)
         vlb -= Dirichlet(self.mf_pi).negentropy()
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 vlb += self.weight_models[c1][c2].get_vlb()
 
         return vlb
@@ -575,12 +575,12 @@ class _MeanFieldSBM(_StochasticBlockModelBase):
         self.m = np.random.dirichlet(self.mf_pi)
         self.p = np.random.beta(self.mf_tau1, self.mf_tau0)
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 self.weight_models[c1][c2].resample_from_mf()
 
         self.c = np.zeros(self.K, dtype=np.int)
-        for k in xrange(self.K):
+        for k in range(self.K):
             self.c[k] = int(np.random.choice(self.C, p=self.mf_m[k,:]))
 
     def svi_step(self, augmented_data, minibatchfrac, stepsize):
@@ -601,9 +601,9 @@ class GaussianStochasticBlockModel(_GibbsSBM, _MeanFieldSBM, GaussianWeightedNet
             return self._Mu
         else:
             Mu = np.zeros((self.N, self.N, self.B))
-            for n1 in xrange(self.N):
+            for n1 in range(self.N):
                 c1 = self.c[n1]
-                for n2 in xrange(self.N):
+                for n2 in range(self.N):
                     c2 = self.c[n2]
                     Mu[n1,n2,:] = self.weight_models[c1][c2].mu
             self._Mu = Mu
@@ -619,9 +619,9 @@ class GaussianStochasticBlockModel(_GibbsSBM, _MeanFieldSBM, GaussianWeightedNet
             return self._Sigma
         else:
             S = np.zeros((self.N, self.N, self.B, self.B))
-            for n1 in xrange(self.N):
+            for n1 in range(self.N):
                 c1 = self.c[n1]
-                for n2 in xrange(self.N):
+                for n2 in range(self.N):
                     c2 = self.c[n2]
                     S[n1,n2,:,:] = self.weight_models[c1][c2].sigma
             self._Sigma = S
@@ -645,24 +645,24 @@ class GaussianStochasticBlockModel(_GibbsSBM, _MeanFieldSBM, GaussianWeightedNet
     # Mean field expectations
     def mf_expected_mu(self):
         E_mu = np.zeros((self.N, self.N, self.B))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 E_mu += self.mf_m[:,c1][:,None,None] * self.mf_m[:,c2][None,:,None] * \
                         self.weight_models[c1][c2].mf_expected_mu()[None, None, :]
         return E_mu
 
     def mf_expected_mumuT(self):
         E_mumuT = np.zeros((self.N, self.N, self.B, self.B))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 E_mumuT += self.mf_m[:,c1][:,None,None,None] * self.mf_m[:,c2][None,:,None,None] * \
                            self.weight_models[c1][c2].mf_expected_mumuT()[None, None, :, :]
         return E_mumuT
 
     def mf_expected_Sigma_inv(self):
         E_Sigma_inv = np.zeros((self.N, self.N, self.B, self.B))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 E_Sigma_inv += self.mf_m[:,c1][:,None,None,None] * self.mf_m[:,c2][None,:,None,None] * \
                                self.weight_models[c1][c2].mf_expected_Sigma_inv()[None, None, :, :]
 
@@ -670,8 +670,8 @@ class GaussianStochasticBlockModel(_GibbsSBM, _MeanFieldSBM, GaussianWeightedNet
 
     def mf_expected_logdet_Sigma(self):
         E_logdet_Sigma = np.zeros((self.N, self.N))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 E_logdet_Sigma += self.mf_m[:,c1][:,None] * self.mf_m[:,c2][None,:] * \
                                   self.weight_models[c1][c2].mf_expected_logdet_Sigma()
 

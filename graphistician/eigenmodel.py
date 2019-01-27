@@ -82,7 +82,7 @@ class _EigenmodelBase(object):
         np.fill_diagonal(Mu, self.mu_0)
         return Mu
 
-    @abc.abstractproperty
+    @property
     def P(self):
         """
         Compute the probability of each edge.
@@ -119,7 +119,7 @@ class _EigenmodelBase(object):
         P  = self.P
         ll = A * np.log(P) + (1-A) * np.log(1-P)
         if not np.all(np.isfinite(ll)):
-            print "P finite? ", np.all(np.isfinite(P))
+            print("P finite? ", np.all(np.isfinite(P)))
             import pdb; pdb.set_trace()
 
         # The graph may contain NaN's to represent missing data
@@ -160,7 +160,7 @@ class _EigenmodelBase(object):
         # # TODO: Scale by lambda in order to get the scaled rotation
         #
         # R = np.zeros((self.D, self.D))
-        # for d in xrange(self.D):
+        # for d in range(self.D):
         #     lr = LinearRegression(fit_intercept=False)
         #     R[:,d] = lr.fit(F_inf, F_true[:,d]).coef_
         #
@@ -194,8 +194,8 @@ class _EigenmodelBase(object):
         # Scatter plot the node embeddings
         ax.plot(F[:,0], F[:,1], 's', color=color, markerfacecolor=color, markeredgecolor=color)
         # Plot the edges between nodes
-        for n1 in xrange(self.N):
-            for n2 in xrange(self.N):
+        for n1 in range(self.N):
+            for n2 in range(self.N):
                 if A[n1,n2]:
                     ax.plot([F[n1,0], F[n2,0]],
                             [F[n1,1], F[n2,1]],
@@ -294,7 +294,7 @@ class _GibbsProbitEigenmodel(_ProbitEigenmodelBase, GibbsSampling):
         """
         # Sample each feature given the rest
         llT = np.outer(self.lmbda, self.lmbda)
-        for n in xrange(self.N):
+        for n in range(self.N):
             # Compute the sufficient statistics for fn
             post_prec = 1.0/self.sigma_F * np.eye(self.D)
             post_mean_dot_prec = np.zeros(self.D)
@@ -304,7 +304,7 @@ class _GibbsProbitEigenmodel(_ProbitEigenmodelBase, GibbsSampling):
                 # fLambda = self.F * self.lmbda[None,:]
                 zcent   = Z - self.mu_0
 
-                for nn in xrange(self.N):
+                for nn in range(self.N):
                     if nn == n:
                         continue
 
@@ -360,8 +360,8 @@ class _GibbsProbitEigenmodel(_ProbitEigenmodelBase, GibbsSampling):
             zcent = Z - self.mu_0
 
             # Update the sufficient statistics
-            for n1 in xrange(self.N):
-                for n2 in xrange(n1+1, self.N):
+            for n1 in range(self.N):
+                for n2 in range(n1+1, self.N):
                     # Update the precision
                     post_prec += 2 * np.outer(self.F[n1,:], self.F[n1,:]) * \
                                      np.outer(self.F[n2,:], self.F[n2,:])
@@ -504,8 +504,8 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
         E_musq += self.mf_expected_mu0sq()
         E_musq += 2*self.mf_mu_mu0 * (self.mf_mu_F * self.mf_mu_lmbda[None, :]).dot(self.mf_mu_F.T)
         llT = self.mf_expected_llT()
-        for n1 in xrange(self.N):
-            for n2 in xrange(self.N):
+        for n1 in range(self.N):
+            for n2 in range(self.N):
                 E_musq[n1,n2] += np.sum(self.mf_expected_ffT(n1)
                                         * llT
                                         * self.mf_expected_ffT(n2))
@@ -619,7 +619,7 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
         E_mu0   = self.mf_mu_mu0
         E_lmbda = self.mf_mu_lmbda
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             # Compute the sufficient statistics for fn
             post_prec = 1.0/self.sigma_F * np.eye(self.D)
             post_mean_dot_prec = np.zeros(self.D)
@@ -627,7 +627,7 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
             # First compute f * Lambda and z-mu0
             zcent   = E_Z - E_mu0
 
-            for nn in xrange(self.N):
+            for nn in range(self.N):
                 if nn == n:
                     continue
 
@@ -659,8 +659,8 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
         zcent = E_Z - E_mu0
 
         # Update the sufficient statistics
-        for n1 in xrange(self.N):
-            for n2 in xrange(n1+1, self.N):
+        for n1 in range(self.N):
+            for n2 in range(n1+1, self.N):
                 # Update the precision
                 post_prec += 2 * self.mf_expected_ffT(n1) * self.mf_expected_ffT(n2)
 
@@ -736,7 +736,7 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
 
         # E[ln p(F | 0, sigma_{F})]
         # -E[ln q(F | mf_mu_F, mf_sigma_F)]
-        for n in xrange(self.N):
+        for n in range(self.N):
             vlb += Gaussian(mu=np.zeros(self.D),
                             Sigma=self.sigma_F *np.eye(self.D))\
                 .negentropy(E_x=self.mf_mu_F[n,:], E_xxT=self.mf_expected_ffT(n))
@@ -760,7 +760,7 @@ class _MeanFieldProbitEigenModel(_ProbitEigenmodelBase, MeanField):
         Resample from the mean field variational posterior
         :return:
         """
-        for n in xrange(self.N):
+        for n in range(self.N):
             self.F[n,:] = np.random.multivariate_normal(self.mf_mu_F[n,:], self.mf_Sigma_F[n,:,:])
 
         self.mu_0 = np.random.normal(self.mf_mu_mu0, np.sqrt(self.mf_sigma_mu0))
@@ -881,7 +881,7 @@ class _GibbsLogisticEigenmodel(_LogisticEigenmodelBase, GibbsSampling):
         """
         # Sample each feature given the rest
         llT = np.outer(self.lmbda, self.lmbda)
-        for n in xrange(self.N):
+        for n in range(self.N):
             # Compute the sufficient statistics for fn
             post_prec = 1.0/self.sigma_F * np.eye(self.D)
             post_mean_dot_prec = np.zeros(self.D)
@@ -891,7 +891,7 @@ class _GibbsLogisticEigenmodel(_LogisticEigenmodelBase, GibbsSampling):
                 # fLambda = self.F * self.lmbda[None,:]
                 zcent   = self.kappa(A)/O - self.mu_0
 
-                for nn in xrange(self.N):
+                for nn in range(self.N):
                     if nn == n:
                         continue
 
@@ -945,8 +945,8 @@ class _GibbsLogisticEigenmodel(_LogisticEigenmodelBase, GibbsSampling):
             zcent = self.kappa(A)/O - self.mu_0
 
             # Update the sufficient statistics
-            for n1 in xrange(self.N):
-                for n2 in xrange(n1+1, self.N):
+            for n1 in range(self.N):
+                for n2 in range(n1+1, self.N):
                     # Update the precision
                     post_prec += (O[n2,n1] + O[n1,n2]) * \
                                  np.outer(self.F[n1,:], self.F[n1,:]) * \
@@ -1095,7 +1095,7 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
         E_mu0   = self.mf_mu_mu0
         E_lmbda = self.mf_mu_lmbda
         E_llT = self.mf_expected_llT()
-        for n in xrange(self.N):
+        for n in range(self.N):
             # Compute the sufficient statistics for fn
             post_prec = 1.0/self.sigma_F * np.eye(self.D)
             post_mean_dot_prec = np.zeros(self.D)
@@ -1104,7 +1104,7 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
             # fLambda = self.F * self.lmbda[None,:]
             zcent   = self.kappa(E_A)/E_O - E_mu0
 
-            for nn in xrange(self.N):
+            for nn in range(self.N):
                 if nn == n:
                     continue
 
@@ -1138,8 +1138,8 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
         zcent = self.kappa(E_A)/E_O - E_mu0
 
         # Update the sufficient statistics
-        for n1 in xrange(self.N):
-            for n2 in xrange(n1+1, self.N):
+        for n1 in range(self.N):
+            for n2 in range(n1+1, self.N):
                 # Update the precision
                 post_prec += (E_O[n2,n1] + E_O[n1,n2]) \
                              * self.mf_expected_ffT(n1) \
@@ -1209,8 +1209,8 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
         E_musq += self.mf_expected_mu0sq()
         E_musq += 2*self.mf_mu_mu0 * (self.mf_mu_F * self.mf_mu_lmbda[None, :]).dot(self.mf_mu_F.T)
         llT = self.mf_expected_llT()
-        for n1 in xrange(self.N):
-            for n2 in xrange(self.N):
+        for n1 in range(self.N):
+            for n2 in range(self.N):
                 E_musq[n1,n2] += np.sum(self.mf_expected_ffT(n1)
                                         * llT
                                         * self.mf_expected_ffT(n2))
@@ -1278,7 +1278,7 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
 
         # E[ln p(F | 0, sigma_{F})]
         # -E[ln q(F | mf_mu_F, mf_sigma_F)]
-        for n in xrange(self.N):
+        for n in range(self.N):
             vlb += Gaussian(mu=np.zeros(self.D),
                             Sigma=self.sigma_F *np.eye(self.D))\
                 .negentropy(E_x=self.mf_mu_F[n,:], E_xxT=self.mf_expected_ffT(n))
@@ -1302,7 +1302,7 @@ class _MeanFieldLogisticEigenModel(_LogisticEigenmodelBase, MeanField):
         Resample from the mean field variational posterior
         :return:
         """
-        for n in xrange(self.N):
+        for n in range(self.N):
             self.F[n,:] = np.random.multivariate_normal(self.mf_mu_F[n,:], self.mf_Sigma_F[n,:,:])
 
         self.mu_0 = np.random.normal(self.mf_mu_mu0, np.sqrt(self.mf_sigma_mu0))

@@ -4,7 +4,7 @@ import numpy as np
 from pybasicbayes.distributions import Gaussian, GaussianFixedMean, GaussianFixedCov
 from pybasicbayes.abstractions import GibbsSampling
 
-from abstractions import GaussianWeightDistribution
+from graphistician.abstractions import GaussianWeightDistribution
 
 class FixedGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
     def __init__(self, N, B, mu, sigma, mu_self=None, sigma_self=None):
@@ -30,7 +30,7 @@ class FixedGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling)
         mu = self._gaussian.mu
         Mu = np.tile(mu[None,None,:], (self.N, self.N,1))
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             Mu[n,n,:] = self._self_gaussian.mu
 
         return Mu
@@ -40,7 +40,7 @@ class FixedGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling)
         sig = self._gaussian.sigma
         Sig = np.tile(sig[None,None,:,:], (self.N, self.N,1,1))
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             Sig[n,n,:,:] = self._self_gaussian.sigma
 
         return Sig
@@ -61,7 +61,7 @@ class FixedGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling)
         Lrow = Lcol = np.tile(self._gaussian.sigma_chol[None,:,:], (self.N+1,1,1))
         return Murow, Mucol, Lrow, Lcol
 
-    def resample(self, (A,W)):
+    def resample(self, A,W):
         pass
 
 
@@ -99,7 +99,7 @@ class NIWGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         mu = self._gaussian.mu
         Mu = np.tile(mu[None,None,:], (self.N, self.N,1))
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             Mu[n,n,:] = self._self_gaussian.mu
 
         return Mu
@@ -109,7 +109,7 @@ class NIWGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         sig = self._gaussian.sigma
         Sig = np.tile(sig[None,None,:,:], (self.N, self.N,1,1))
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             Sig[n,n,:,:] = self._self_gaussian.sigma
 
         return Sig
@@ -151,7 +151,7 @@ class NIWGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         Lcol[-1,:,:] = self._self_gaussian.sigma_chol
         return Murow, Mucol, Lrow, Lcol
 
-    def resample(self, (A,W)):
+    def resample(self, A,W):
         # Resample the Normal-inverse Wishart prior over mu and W
         # given W for which A=1
         A_offdiag = A.copy()
@@ -219,8 +219,8 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
 
         self._gaussians = [[Gaussian(mu_0=mu_0, nu_0=nu_0,
                                      kappa_0=kappa_0, sigma_0=Sigma_0)
-                            for _ in xrange(C)]
-                           for _ in xrange(C)]
+                            for _ in range(C)]
+                           for _ in range(C)]
 
         # Special case self-weights (along the diagonal)
         self.special_case_self_conns = special_case_self_conns
@@ -231,14 +231,14 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
     @property
     def _Mu(self):
         return np.array([[self._gaussians[c1][c2].mu
-                          for c2 in xrange(self.C)]
-                         for c1 in xrange(self.C)])
+                          for c2 in range(self.C)]
+                         for c1 in range(self.C)])
 
     @property
     def _Sigma(self):
         return np.array([[self._gaussians[c1][c2].sigma
-                          for c2 in xrange(self.C)]
-                         for c1 in xrange(self.C)])
+                          for c2 in range(self.C)]
+                         for c1 in range(self.C)])
 
     @property
     def Mu(self):
@@ -250,7 +250,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         Mu = _Mu[np.ix_(self.c, self.c)]
 
         if self.special_case_self_conns:
-            for n in xrange(self.N):
+            for n in range(self.N):
                 Mu[n,n] = self._self_gaussian.mu
 
         return Mu
@@ -265,7 +265,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         Sigma = _Sigma[np.ix_(self.c, self.c)]
 
         if self.special_case_self_conns:
-            for n in xrange(self.N):
+            for n in range(self.N):
                 Sigma[n,n] = self._self_gaussian.sigma
 
         return Sigma
@@ -274,8 +274,8 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         self.m = np.random.dirichlet(self.pi)
         self.c = np.random.choice(self.C, p=self.m, size=(self.N))
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 self._gaussians[c1][c2].resample()
         if self.special_case_self_conns:
             self._self_gaussian.resample()
@@ -283,8 +283,8 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
     def initialize_hypers(self, W):
         mu_0 = W.mean(axis=(0,1))
         sigma_0 = np.diag(W.var(axis=(0,1)))
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 nu_0 = self._gaussians[c1][c2].nu_0
                 self._gaussians[c1][c2].mu_0 = mu_0
                 self._gaussians[c1][c2].sigma_0 = sigma_0 * (nu_0 - self.B - 1) / self.C
@@ -303,7 +303,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         km.fit(features)
         self.c = km.labels_.astype(np.int)
 
-        print "Initial c: ", self.c
+        print("Initial c: ", self.c)
 
     def _get_mask(self, A, c1, c2):
             mask = ((self.c==c1)[:,None] * (self.c==c2)[None,:])
@@ -313,14 +313,14 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
 
             return mask
 
-    def log_likelihood(self, (A,W)):
+    def log_likelihood(self, A,W):
         N = self.N
         assert A.shape == (N,N)
         assert W.shape == (N,N,self.B)
 
         ll = 0
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 mask = self._get_mask(A, c1, c2)
                 ll += self._gaussians[c1][c2].log_likelihood(W[mask]).sum()
 
@@ -345,8 +345,8 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         lp += dirichlet(self.pi).logpdf(self.m)
 
         # Get the prior probability of the Gaussian parameters under NIW prior
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 lp += normal_inverse_wishart_log_prob(self._gaussians[c1][c2])
 
         if self.special_case_self_conns:
@@ -361,13 +361,13 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         # Sample a network given m, c, p
         W = np.zeros((self.N, self.N, self.B))
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 blk = (self.c==c1)[:,None] * (self.c==c2)[None,:]
                 W[blk] = self._gaussians[c1][c2].rvs(size=blk.sum())
 
         if self.special_case_self_conns:
-            for n in xrange(self.N):
+            for n in range(self.N):
                 W[n,n] = self._self_gaussian.rvs()
 
         return W
@@ -391,7 +391,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
     ###
     ### Implement Gibbs sampling for SBM
     ###
-    def resample(self, (A,W)):
+    def resample(self, A,W):
         self.resample_mu_and_Sig(A,W)
         self.resample_c(A,W)
         self.resample_m()
@@ -402,8 +402,8 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         """
         Abool = A.astype(np.bool)
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 mask = self._get_mask(Abool, c1, c2)
                 self._gaussians[c1][c2].resample(W[mask])
 
@@ -427,7 +427,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
         def _evaluate_lkhd_slow(n1, cn1):
             ll = 0
             # Compute probability for each incoming and outgoing
-            for n2 in xrange(self.N):
+            for n2 in range(self.N):
                 cn2 = self.c[n2]
 
                 # If we are special casing the self connections then
@@ -454,7 +454,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
 
             # Compute log lkhd for each pair of blocks
             ll = 0
-            for c2 in xrange(self.C):
+            for c2 in range(self.C):
                 # Outgoing connections
                 out_mask = (chat == c2) & Abool[n1,:]
                 if self.special_case_self_conns:
@@ -470,7 +470,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
             return ll
 
         # Sample each assignment in order
-        for n1 in xrange(self.N):
+        for n1 in range(self.N):
             # Compute unnormalized log probs of each connection
             lp = np.zeros(self.C)
 
@@ -478,7 +478,7 @@ class SBMGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
             lp += np.log(self.m)
 
             # Likelihood from network
-            for cn1 in xrange(self.C):
+            for cn1 in range(self.C):
                 ll = _evaluate_lkhd(n1, cn1)
                 # ll_slow = _evaluate_lkhd_slow(n1, cn1)
                 # assert np.allclose(ll,ll_slow)
@@ -523,8 +523,8 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
 
         self._gaussians = [[GaussianFixedCov(mu_0=mu_0, sigma_0=np.eye(B),
                                              sigma=self._cov_model.sigma)
-                            for _ in xrange(C)]
-                           for _ in xrange(C)]
+                            for _ in range(C)]
+                           for _ in range(C)]
 
     def resample_mu_and_Sig(self, A, W):
         """
@@ -532,8 +532,8 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
         """
         Abool = A.astype(np.bool)
 
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 mask = self._get_mask(Abool, c1, c2)
                 self._gaussians[c1][c2].resample(W[mask])
 
@@ -549,8 +549,8 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
         self._cov_model.resample(W_cent)
 
         # Update gaussians
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 self._gaussians[c1][c2].sigma = self._cov_model.sigma
 
     def log_prior(self):
@@ -567,8 +567,8 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
         lp += dirichlet(self.pi).logpdf(self.m)
 
         # Get the prior probability of the Gaussian parameters under NIW prior
-        # for c1 in xrange(self.C):
-        #     for c2 in xrange(self.C):
+        # for c1 in range(self.C):
+        #     for c2 in range(self.C):
         #         lp += normal_inverse_wishart_log_prob(self._gaussians[c1][c2])
         #
         # if self.special_case_self_conns:
@@ -588,8 +588,8 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
         self._cov_model.sigma_0 = sigma_0 * (nu_0 - self.B - 1)
 
         # Set the mean
-        for c1 in xrange(self.C):
-            for c2 in xrange(self.C):
+        for c1 in range(self.C):
+            for c2 in range(self.C):
                 self._gaussians[c1][c2].mu_0 = mu_0
                 self._gaussians[c1][c2].sigma = self._cov_model.sigma_0
                 self._gaussians[c1][c2].resample()
@@ -607,7 +607,7 @@ class SBMGaussianWeightSharedCov(SBMGaussianWeightDistribution):
         km.fit(features)
         self.c = km.labels_.astype(np.int)
 
-        print "Initial c: ", self.c
+        print( "Initial c: ", self.c)
 
 
 class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, GibbsSampling):
@@ -654,7 +654,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
     def Mu(self):
         Mu = -self.D + self.b
         Mu = np.tile(Mu[:,:,None], (1,1,self.B))
-        for n in xrange(self.N):
+        for n in range(self.N):
             Mu[n,n,:] = self._self_gaussian.mu
 
         return Mu
@@ -664,7 +664,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
         sig = self.cov.sigma
         Sig = np.tile(sig[None,None,:,:], (self.N, self.N,1,1))
 
-        for n in xrange(self.N):
+        for n in range(self.N):
             Sig[n,n,:,:] = self._self_gaussian.sigma
 
         return Sig
@@ -744,7 +744,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
         Mu_col = Mu_row.copy()
 
         # Mu = np.tile(Mu[:,:,None], (1,1,self.B))
-        # for n in xrange(self.N+1):
+        # for n in range(self.N+1):
         #     Mu[n,n,:] = self._self_gaussian.mu
 
         L = np.linalg.cholesky(self.cov.sigma)
@@ -753,7 +753,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
         L_col = L_row.copy()
 
         # L = np.tile(L[None,None,:,:], (self.N+1, self.N+1, 1, 1))
-        # for n in xrange(self.N+1):
+        # for n in range(self.N+1):
         #     L[n,n,:,:] = np.linalg.cholesky(self._self_gaussian.sigma)
 
         # Mu_row, Mu_col = Mu[-1,:,:], Mu[:,-1,:]
@@ -761,7 +761,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
         return Mu_row, Mu_col, L_row, L_col
 
 
-    def resample(self, (A,W)):
+    def resample(self, A,W):
         self._resample_L(A, W)
         self._resample_b(A, W)
         self._resample_cov(A, W)
@@ -844,7 +844,7 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
                    np.array(self.b),
                    negative_log_prob=False)
         self.b = float(b)
-        print "b: ", self.b
+        print( "b: ", self.b)
 
     def _resample_b(self, A, W):
         """
@@ -932,8 +932,8 @@ class LatentDistanceGaussianWeightDistribution(GaussianWeightDistribution, Gibbs
 
         # Scatter plot the node embeddings
         # Plot the edges between nodes
-        for n1 in xrange(self.N):
-            for n2 in xrange(self.N):
+        for n1 in range(self.N):
+            for n2 in range(self.N):
                 if A[n1,n2]:
                     ax.plot([L[n1,0], L[n2,0]],
                             [L[n1,1], L[n2,1]],
