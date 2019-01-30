@@ -29,6 +29,6 @@ neuronalData = {'Enc': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc
 
 network_hypers = {"p": 0.4, "allow_self_connections": False}
 
-fit_model_discrete_time_network_hawkes_spike_and_slab(30, network_hypers, 200, neuronalData, allNeurons)
+fit_model_discrete_time_network_hawkes_spike_and_slab(30, network_hypers, 10, neuronalData, allNeurons)
 
 

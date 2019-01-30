@@ -19,9 +19,10 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
     period, data = zip(*spikesData.items())
     for per in range(len(period)):
         print('State:', '**** ', period[per], ' ****')
+        k = data[per].shape[1]
 
         model = DiscreteTimeNetworkHawkesModelSpikeAndSlab(
-            K=data[per].shape[1], dt_max=dtmax,
+            K=k, dt_max=dtmax,
             network_hypers=hypers)
         assert model.check_stability()
 
@@ -45,19 +46,44 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
         # Compute sample statistics for second half of samples
         A_samples = np.array([s.weight_model.A for s in samples])
         W_samples = np.array([s.weight_model.W for s in samples])
-        lps = np.array(lps)
+        W_effective_sample = np.array([s.weight_model.W_effective for s in samples])
+        LambdaZero_sample = np.array([s.bias_model.lambda0 for s in samples])
+        ImpulseG_sample = np.array([np.reshape(s.impulse_model.g, (k,k,s.impulse_model.B)) for s in samples])
+
+        # DIC evaluation
+
+        # theta_bar evaluation
+
+        A_mean = A_samples[:, ...].mean(axis=0)
+        W_mean = W_samples[:, ...].mean(axis=0)
+        LambdaZero_mean = LambdaZero_sample[:, ...].mean(axis=0)
+        ImpulseG_mean = ImpulseG_sample[:, ...].mean(axis=0)
+
+        logLik = np.array(lps)
+
+        # D_hat evaluation
+
+        D_hat = -2 * (model.weight_model.log_likelihood(tuple((A_mean, W_mean))) +
+                model.impulse_model.log_likelihood(ImpulseG_mean) +
+                model.bias_model.log_likelihood(LambdaZero_mean))
+        D_bar = -2*np.mean(logLik)
+        pD = D_bar - D_hat
+        pV = np.var(-2*logLik)/2
+
+        DIC = pD + D_bar
+
+        print("DIC for model in ", str(period[per]), " : ", str(DIC))
 
         offset = N_samples // 2
-        A_mean = A_samples[offset:, ...].mean(axis=0)
-        W_mean = W_samples[offset:, ...].mean(axis=0)
+        W_effective_mean = W_effective_sample[offset:, ...].mean(axis=0)
 
         # set week weight element to zero
 
-        for (a1, b1) in np.ndindex(A_mean.shape):
-            if A_mean[a1, b1] <= 0.5:
-                A_mean[a1, b1] = 0
-
-        W_effective_mean = A_mean * W_mean
+        # for (a1, b1) in np.ndindex(A_mean.shape):
+        #     if A_mean[a1, b1] <= 0.5:
+        #         A_mean[a1, b1] = 0
+        #
+        # W_effective_mean = A_mean * W_mean
 
         # Create Graph Objects
         typ = nx.DiGraph()
