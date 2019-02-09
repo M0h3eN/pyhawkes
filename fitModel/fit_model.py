@@ -3,14 +3,19 @@ from dataImport.commons.basicFunctions import saccade_df, computerFrAll, createP
 from pyhawkes.models import DiscreteTimeNetworkHawkesModelSpikeAndSlab
 from fitModel.plot_network import plot_network
 from bokeh.io import export_png
+from pymongo import MongoClient
+from networkx.readwrite import json_graph
+import os
 import numpy as np
 import networkx as nx
 import plotly.io as pio
 import time
-from pymongo import MongoClient
+
 
 client = MongoClient()
-db = client.MCMC_diagnostics
+paramValuesDB = client.MCMC_param
+diagnosticValuesDB = client.MCMC_diag
+GraphDB = client.Graph
 
 
 # plotly save configuration
@@ -20,13 +25,25 @@ time.sleep(10)
 
 def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, spikesData, completeData, chainsNumber):
 
-    writePath = '/home/mohsen/projects/pyhawkes/data/'
+
     period, data = zip(*spikesData.items())
 
     # Chain loop
     for chain in range(chainsNumber):
 
+        writePath = '/home/mohsen/projects/pyhawkes/data/' + 'Chain' + str(chain + 1)
+        if not os.path.exists(writePath):
+            os.makedirs(writePath)
+        tempPath = writePath
+
         for per in range(len(period)):
+            # directory management
+            writePath = tempPath + '/' + period[per]
+            if not os.path.exists(writePath):
+                os.makedirs(writePath)
+
+            writePath = writePath + '/'
+
             print('State:', '**** ', period[per], 'CHAIN: ', str(chain), ' ****')
             k = data[per].shape[1]
 
@@ -40,6 +57,7 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
             ###########################################################
             # Fit the test model with Gibbs sampling
             ###########################################################
+
             samples = []
             lps = []
 
@@ -51,31 +69,48 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             # def analyze_samples(true_model, samples, lps):
             N_samples = len(samples)
+            B = samples[1].impulse_model.B
 
-            # Compute sample statistics for second half of samples
-            #A_samples = np.array([s.weight_model.A for s in samples])
+            # Ingestion each model MCMC samples to mongoDB
 
-            Akeys = {}
-            Wkeys = {}
-            WeKeys = {}
-            a = 1
+            Akeys = []
+            Wkeys = []
+            WeKeys = []
             for i in range(k):
                 for j in range(k):
-                    Akeys[a] = "a_" + str(i + 1) + str(j + 1)
-                    Wkeys[a] = "w_" + str(i + 1) + str(j + 1)
-                    WeKeys[a] = "we_" + str(i + 1) + str(j + 1)
-                    a = a + 1
+                    Akeys.append("a_" + str(i + 1) + ',' + str(j + 1))
+                    Wkeys.append("w_" + str(i + 1) + ',' + str(j + 1))
+                    WeKeys.append("we_" + str(i + 1) + ',' + str(j + 1))
 
-                    # Strange that doesnt know about int
+            Imkeys = []
+            for i in range(k):
+                for j in range(k):
+                    for p1 in range(B):
+                        Imkeys.append("im_" + str(i + 1) + ',' + str(j + 1) + ',' + str(p1 + 1))
 
+            LamKeys = []
+            for i in range(k):
+                LamKeys.append("la_" + str(i + 1))
 
-            A_samples = (
-                [dict(zip(Akeys.values(), np.array(s.weight_model.A.flatten(), "float"))) for s in samples])
+            # Strange, BSON doesnt know about python int
 
-            colName = period[per] + str(chain)
+            allKeys = Akeys + Wkeys + WeKeys + Imkeys + LamKeys
 
-            db.colName.insert_many(A_samples)
+            All_samples_param = (
+                [dict(zip(allKeys, (
+                        list(np.array(s.weight_model.A.flatten(), "float")) +
+                        list(np.array(s.weight_model.W.flatten(), "float")) +
+                        list(np.array(s.weight_model.W_effective.flatten(), "float")) +
+                        list(np.array(np.reshape(s.impulse_model.g, (k, k, s.impulse_model.B)).flatten(),
+                                      "float")) +
+                        list(np.array(s.bias_model.lambda0.flatten(), "float"))
+                )
+                          )) for s in samples])
 
+            colName = period[per] + '___' + str(chain)
+            paramValuesDB[colName].insert_many(All_samples_param)
+
+            A_samples = np.array([s.weight_model.A for s in samples])
             W_samples = np.array([s.weight_model.W for s in samples])
             W_effective_sample = np.array([s.weight_model.W_effective for s in samples])
             LambdaZero_sample = np.array([s.bias_model.lambda0 for s in samples])
@@ -103,7 +138,18 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             DIC = pD + D_bar
 
-            print("DIC for model in ", str(period[per]), " : ", str(DIC))
+            modelDiag = {'logLik': lps,
+                         'D_hat': D_hat,
+                         'D_bar': D_bar,
+                         'pD': pD,
+                         'pV': pV,
+                         'DIC': DIC}
+
+            colNameDiag = period[per] + '___' + str(chain)
+            diagnosticValuesDB[colNameDiag].insert_one(modelDiag)
+
+
+            # Compute sample statistics for second half of samples
 
             offset = N_samples // 2
             W_effective_mean = W_effective_sample[offset:, ...].mean(axis=0)
@@ -120,15 +166,20 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
             typ = nx.DiGraph()
             G = nx.from_numpy_matrix(15 * W_effective_mean, create_using=typ)
 
-            fv = plot_network(G, writePath + 'Network-' + str(period[per]))
+            dataGraph = json_graph.adjacency_data(G)
+
+            colNameGraph = period[per] + '___' + str(chain)
+            GraphDB[colNameGraph].insert_one(dataGraph)
+
+            fv = plot_network(G, writePath + 'Network')
 
             # Compute the mutual information
 
             saccade_data_set = saccade_df(completeData)
-            mivaluesNoStim = computeMI(completeData, saccade_data_set, "noStim")
+            mivaluesNoStim = computeMI(completeData, saccade_data_set, period[per].split("-")[2])
 
-            plotBarGraphCentrality(mivaluesNoStim, fv, writePath + 'MutualInformation-' + str(period[per]))
-            plotBarGraphCentralityCompare(mivaluesNoStim, fv, writePath + 'MutualInformationCompare-' + str(period[per]))
+            plotBarGraphCentrality(mivaluesNoStim, fv, writePath + 'MutualInformation')
+            plotBarGraphCentralityCompare(mivaluesNoStim, fv, writePath + 'MutualInformationCompare')
 
             # PSTH
 
@@ -137,7 +188,7 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             export_png(plotFun(createPlotDF(DF=visualAndDelay, DF2=completeData[0], period='vis', ind=fv),
                                createPlotDF(DF=saccade, DF2=completeData[fv], period='sac', ind=fv)),
-                       filename=writePath + 'FiringRate-' + str(period[per]) + '.png')
+                       filename=writePath + 'FiringRate' + '.png')
 
 
 

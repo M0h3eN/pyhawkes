@@ -19,7 +19,7 @@ def computeMI(DF, saccad_data, stim_status):
     # miOutNoStim = []
     for ni in range(len(DF)):
         # With Stim
-        if stim_status == "withStim":
+        if stim_status == "Stim":
             
             allVisual = computeSpikeCount(conditionSelect(DF[ni], subStatus="allStim"), 1050, 1250)
             allMem = computeSpikeCount(conditionSelect(DF[ni], subStatus="allStim"), 2500, 2700)

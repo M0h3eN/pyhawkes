@@ -18,17 +18,36 @@ np.sort(np.array([sum(allNeurons[x].iloc[:, 0:(minTime - 9)].sum()) for x in ran
 
 # slicing time to decompose Enc, Memory and saccade times
 
-neuronalData = {'Enc': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 1050:1250].sum(axis=0)
+neuronalData = {'Enc-In-NoStim': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 1050:1250].sum(axis=0)
                       for b in range(len(allNeurons))]).transpose(),
-                'Mem': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 2500:2700].sum(axis=0)
+                'Mem-In-NoStim': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 2500:2700].sum(axis=0)
                       for b in range(len(allNeurons))]).transpose(),
-                'Sac': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 3150:3350].sum(axis=0)
-                      for b in range(len(allNeurons))]).transpose()}
+                'Sac-In-NoStim': np.array([conditionSelect(allNeurons[b], 'inNoStim').iloc[:, 3150:3350].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Enc-In-Stim': np.array([conditionSelect(allNeurons[b], 'inStim').iloc[:, 1050:1250].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Mem-In-Stim': np.array([conditionSelect(allNeurons[b], 'inStim').iloc[:, 2500:2700].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Sac-In-Stim': np.array([conditionSelect(allNeurons[b], 'inStim').iloc[:, 3150:3350].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Enc-Out-NoStim': np.array([conditionSelect(allNeurons[b], 'OutNoStim').iloc[:, 1050:1250].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Mem-Out-NoStim': np.array([conditionSelect(allNeurons[b], 'OutNoStim').iloc[:, 2500:2700].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Sac-Out-NoStim': np.array([conditionSelect(allNeurons[b], 'OutNoStim').iloc[:, 3150:3350].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Enc-Out-Stim': np.array([conditionSelect(allNeurons[b], 'outStim').iloc[:, 1050:1250].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Mem-Out-Stim': np.array([conditionSelect(allNeurons[b], 'outStim').iloc[:, 2500:2700].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose(),
+                'Sac-Out-Stim': np.array([conditionSelect(allNeurons[b], 'outStim').iloc[:, 3150:3350].sum(axis=0)
+                      for b in range(len(allNeurons))]).transpose()
+                }
 
 # network hyper parameter definition
 
 network_hypers = {"p": 0.4, "allow_self_connections": False}
 
-fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 100, neuronalData, allNeurons, 1)
+fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 100, neuronalData, allNeurons, 2)
 
 
