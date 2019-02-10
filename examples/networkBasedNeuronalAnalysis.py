@@ -2,9 +2,6 @@ import os
 import numpy as np
 from dataImport.commons.basicFunctions import assembleData, conditionSelect
 from fitModel.fit_model import fit_model_discrete_time_network_hawkes_spike_and_slab
-from fitModel.GelmanRubin_convergence import compute_gelman_rubin_convergence
-
-
 
 
 # prepare data
@@ -52,10 +49,11 @@ network_hypers = {"p": 0.4, "allow_self_connections": False}
 
 # fit model
 
-fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 50, neuronalData, allNeurons, 3)
+fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 10000, neuronalData, allNeurons, 3)
 
 # Gelman-Rubin convergence statistics
 
+from fitModel.GelmanRubin_convergence import compute_gelman_rubin_convergence
 compute_gelman_rubin_convergence()
 
 
