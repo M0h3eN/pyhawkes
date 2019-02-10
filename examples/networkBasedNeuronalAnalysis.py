@@ -2,6 +2,7 @@ import os
 import numpy as np
 from dataImport.commons.basicFunctions import assembleData, conditionSelect
 from fitModel.fit_model import fit_model_discrete_time_network_hawkes_spike_and_slab
+from fitModel.GelmanRubin_convergence import compute_gelman_rubin_convergence
 
 
 
@@ -48,6 +49,13 @@ neuronalData = {'Enc-In-NoStim': np.array([conditionSelect(allNeurons[b], 'inNoS
 
 network_hypers = {"p": 0.4, "allow_self_connections": False}
 
-fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 100, neuronalData, allNeurons, 2)
+
+# fit model
+
+fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 50, neuronalData, allNeurons, 3)
+
+# Gelman-Rubin convergence statistics
+
+compute_gelman_rubin_convergence()
 
 

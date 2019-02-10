@@ -45,6 +45,7 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
             writePath = writePath + '/'
 
             print('State:', '**** ', period[per], 'CHAIN: ', str(chain), ' ****')
+
             k = data[per].shape[1]
 
             model = DiscreteTimeNetworkHawkesModelSpikeAndSlab(
@@ -138,7 +139,8 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             DIC = pD + D_bar
 
-            modelDiag = {'logLik': lps,
+            modelDiag = {'Model': str(model.__class__).split(".")[2].split("'")[0],
+                         'logLik': lps,
                          'D_hat': D_hat,
                          'D_bar': D_bar,
                          'pD': pD,
