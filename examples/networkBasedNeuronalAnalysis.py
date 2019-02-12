@@ -7,7 +7,7 @@ from fitModel.fit_model import fit_model_discrete_time_network_hawkes_spike_and_
 # prepare data
 
 # read all neurons
-dirr = os.fsencode("/home/mohsen/projects/neuroScienceWork/data")
+dirr = os.fsencode("/home/mohsen/projects/pyhawkes/data/RawData")
 allNeurons = assembleData(dirr)
 
 # align end date
