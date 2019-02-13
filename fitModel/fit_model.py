@@ -12,18 +12,19 @@ import plotly.io as pio
 import time
 
 
-client = MongoClient()
-paramValuesDB = client.MCMC_param
-diagnosticValuesDB = client.MCMC_diag
-GraphDB = client.Graph
-
-
 # plotly save configuration
 pio.orca.ensure_server()
 time.sleep(10)
 
 
-def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, spikesData, completeData, chainsNumber):
+def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, spikesData, completeData, chainsNumber, args):
+
+    # MongoDB connection config
+
+    client = MongoClient("mongodb://" + args.host + ':' + args.port)
+    paramValuesDB = client.MCMC_param
+    diagnosticValuesDB = client.MCMC_diag
+    GraphDB = client.Graph
 
 
     period, data = zip(*spikesData.items())
@@ -31,7 +32,7 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
     # Chain loop
     for chain in range(chainsNumber):
 
-        writePath = '/home/mohsen/projects/pyhawkes/data/' + 'Chain' + str(chain + 1)
+        writePath = args.write + 'Chain' + str(chain + 1)
         if not os.path.exists(writePath):
             os.makedirs(writePath)
         tempPath = writePath

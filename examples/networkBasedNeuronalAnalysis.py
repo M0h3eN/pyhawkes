@@ -1,13 +1,54 @@
 import os
+from argparse import ArgumentParser
 import numpy as np
 from dataImport.commons.basicFunctions import assembleData, conditionSelect
 from fitModel.fit_model import fit_model_discrete_time_network_hawkes_spike_and_slab
+
+parser = ArgumentParser(description='This is a Python program for analysis on network of neurons to '
+                                    'detect functional connectivity between neurons')
+
+
+parser.add_argument('-d', '--data',  action='store',
+                    dest='data', help='Raw data directory')
+
+
+parser.add_argument('-H', '--host', action='store',
+                    dest='host', help='MongoDB host name')
+
+parser.add_argument('-p', '--port',action='store',
+                    dest='port', help='MongoDB port number')
+
+parser.add_argument('-w', '--write', action='store',
+                    dest='write', help='Output directory')
+
+parser.add_argument('-s', '--sparsity', action='store',
+                    dest='sparsity', help='Initial sparsity of the network', type=float)
+
+parser.add_argument('-S', '--self', action='store_true',
+                    default=False,
+                    dest='self', help='Allow self connection')
+
+parser.add_argument('-l', '--lag', action='store',
+                    dest='lag', help='Impulse response lag', type=int)
+
+parser.add_argument('-i', '--iter', action='store',
+                    dest='iter', help='Number of MCMC iteration', type=int)
+
+parser.add_argument('-c', '--chain', action='store',
+                    dest='chain', help='Number of MCMC chain', type=int)
+
+parser.add_argument('-v', '--version', action='version',
+                    dest='', version='%(prog)s 0.1')
+
+
+args = parser.parse_args()
+
 
 
 # prepare data
 
 # read all neurons
-dirr = os.fsencode("/home/mohsen/projects/pyhawkes/data/RawData")
+dirr = os.fsencode(args.data)
 allNeurons = assembleData(dirr)
 
 # align end date
@@ -44,16 +85,17 @@ neuronalData = {'Enc-In-NoStim': np.array([conditionSelect(allNeurons[b], 'inNoS
 
 # network hyper parameter definition
 
-network_hypers = {"p": 0.4, "allow_self_connections": False}
+network_hypers = {"p": args.sparsity, "allow_self_connections": args.self}
 
 
 # fit model
 
-fit_model_discrete_time_network_hawkes_spike_and_slab(25, network_hypers, 10000, neuronalData, allNeurons, 3)
+fit_model_discrete_time_network_hawkes_spike_and_slab(args.lag, network_hypers, args.iter, neuronalData,
+                                                      allNeurons, args.chain, args)
 
 # Gelman-Rubin convergence statistics
 
 from fitModel.GelmanRubin_convergence import compute_gelman_rubin_convergence
-compute_gelman_rubin_convergence()
+compute_gelman_rubin_convergence(args)
 
 

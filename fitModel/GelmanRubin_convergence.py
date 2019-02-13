@@ -2,33 +2,32 @@ import numpy as np
 import pandas as pd
 from pymongo import MongoClient
 
-# MCMC sample collection config
-
-client = MongoClient()
-paramValuesDB = client['MCMC_param']
-GRConvergenceDB = client['Convergence_GR']
-
-# drop select mongoDB _id
-
-projection = {"_id": 0}
-
-# get all model name
-
-collectionNames = paramValuesDB.list_collection_names()
-
-# MCMC run iteration
-
-n = paramValuesDB[collectionNames[0]].count()
-
-# MCMC chain
-
-maxNumberOfChain = np.max([int(collectionNames[x].split("_")[3]) for x in range(len(collectionNames))])
-models = np.unique(np.array(([collectionNames[x].split("_")[0] for x in range(len(collectionNames))])))
-
 # compute GR convergence for all models
 
 
-def compute_gelman_rubin_convergence():
+def compute_gelman_rubin_convergence(args):
+    # MCMC sample collection config
+
+    client = MongoClient("mongodb://" + args.host + ':' + args.port)
+    paramValuesDB = client['MCMC_param']
+    GRConvergenceDB = client['Convergence_GR']
+
+    # drop select mongoDB _id
+
+    projection = {"_id": 0}
+
+    # get all model name
+
+    collectionNames = paramValuesDB.list_collection_names()
+
+    # MCMC run iteration
+
+    n = paramValuesDB[collectionNames[0]].count()
+
+    # MCMC chain
+
+    maxNumberOfChain = np.max([int(collectionNames[x].split("_")[3]) for x in range(len(collectionNames))])
+    models = np.unique(np.array(([collectionNames[x].split("_")[0] for x in range(len(collectionNames))])))
 
     for model in models:
 
