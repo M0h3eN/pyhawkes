@@ -32,7 +32,8 @@ setup(name='pyhawkes',
       ext_modules=ext_modules,
       install_requires=['scipy', 'matplotlib',
                         'joblib', 'scikit-learn', 'pybasicbayes',
-                        'plotly', 'networkx', 'bokeh', 'pandas', 'gslrandom', 'autograd'],
+                        'plotly', 'networkx', 'bokeh', 'pandas',
+                        'gslrandom', 'autograd', 'pymongo', 'psutil'],
       include_dirs=[np.get_include(),],
       packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'dataImport', 'graphistician']
      )
