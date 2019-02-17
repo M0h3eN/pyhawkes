@@ -26,9 +26,22 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
     diagnosticValuesDB = client.MCMC_diag
     GraphDB = client.Graph
     EstimatedGrapgDB = client.Estimation
+    MutualInformation = client.MutualInformation
 
 
     period, data = zip(*spikesData.items())
+
+    # Compute the mutual information
+
+    saccade_data_set = saccade_df(completeData)
+    mivaluesDict = dict(Stim=computeMI(completeData, saccade_data_set, 'Stim').to_dict('list'),
+                                 NoStim=computeMI(completeData, saccade_data_set, 'NoStim').to_dict('list'))
+    mivalues = dict(Stim=computeMI(completeData, saccade_data_set, 'Stim'),
+                                 NoStim=computeMI(completeData, saccade_data_set, 'NoStim'))
+
+    # Mutual Information ingestion
+
+    MutualInformation['Mi'].insert_one(mivaluesDict)
 
     # Chain loop
     for chain in range(chainsNumber):
@@ -175,22 +188,18 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             # Create Graph Objects
             typ = nx.DiGraph()
+            G0 = nx.from_numpy_matrix(W_effective_mean, create_using=typ)
             G = nx.from_numpy_matrix(15 * W_effective_mean, create_using=typ)
 
-            dataGraph = json_graph.adjacency_data(G)
+            dataGraph = json_graph.adjacency_data(G0)
 
             colNameGraph = period[per] + '___' + str(chain)
             GraphDB[colNameGraph].insert_one(dataGraph)
 
             fv = plot_network(G, writePath + 'Network')
 
-            # Compute the mutual information
-
-            saccade_data_set = saccade_df(completeData)
-            mivaluesNoStim = computeMI(completeData, saccade_data_set, period[per].split("-")[2])
-
-            plotBarGraphCentrality(mivaluesNoStim, fv, writePath + 'MutualInformation')
-            plotBarGraphCentralityCompare(mivaluesNoStim, fv, writePath + 'MutualInformationCompare')
+            plotBarGraphCentrality(mivalues[period[per].split("-")[2]], fv, writePath + 'MutualInformation')
+            plotBarGraphCentralityCompare(mivalues[period[per].split("-")[2]], fv, writePath + 'MutualInformationCompare')
 
             # PSTH
 
