@@ -25,6 +25,7 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
     paramValuesDB = client.MCMC_param
     diagnosticValuesDB = client.MCMC_diag
     GraphDB = client.Graph
+    EstimatedGrapgDB = client.Estimation
 
 
     period, data = zip(*spikesData.items())
@@ -156,6 +157,13 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
 
             offset = N_samples // 2
             W_effective_mean = W_effective_sample[offset:, ...].mean(axis=0)
+
+            # Insert estimated graph after burnIn phase
+
+            EstimatedGrapgDB[colNameDiag].insert_one(dict(zip(WeKeys,
+                                                              list(np.array(W_effective_mean.flatten(), "float")))))
+
+
 
             # set week weight element to zero
 
