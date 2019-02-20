@@ -165,7 +165,6 @@ def fit_model_discrete_time_network_hawkes_spike_and_slab(dtmax, hypers, itter, 
             colNameDiag = period[per] + '___' + str(chain)
             diagnosticValuesDB[colNameDiag].insert_one(modelDiag)
 
-
             # Compute sample statistics for second half of samples
 
             offset = N_samples // 2
