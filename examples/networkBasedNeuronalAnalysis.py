@@ -1,8 +1,9 @@
 import os
-from argparse import ArgumentParser
 import numpy as np
+from argparse import ArgumentParser
 from dataImport.commons.basicFunctions import assembleData, conditionSelect
 from fitModel.fit_model import fit_model_discrete_time_network_hawkes_spike_and_slab
+
 
 parser = ArgumentParser(description='This is a Python program for analysis on network of neurons to '
                                     'detect functional connectivity between neurons')
@@ -42,8 +43,6 @@ parser.add_argument('-v', '--version', action='version',
 
 
 args = parser.parse_args()
-
-
 
 # prepare data
 
@@ -90,8 +89,16 @@ network_hypers = {"p": args.sparsity, "allow_self_connections": args.self}
 
 # fit model
 
+# Chain loop
+
+# for chain in range(args.chain):
+#     fit_par = partial(fit_model_discrete_time_network_hawkes_spike_and_slab, *[args.lag, network_hypers,
+#                                                                                args.iter, data, period, allNeurons,
+#                                                                                chain,
+#                                                                                args])
+
 fit_model_discrete_time_network_hawkes_spike_and_slab(args.lag, network_hypers, args.iter, neuronalData,
-                                                      allNeurons, args.chain, args)
+                                                      allNeurons, 1, args)
 
 # Gelman-Rubin convergence statistics
 

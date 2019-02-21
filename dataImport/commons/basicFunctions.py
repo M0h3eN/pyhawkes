@@ -4,10 +4,15 @@ import numpy as np
 import pandas as pd
 import scipy.io as sio
 import scipy.signal as sig
+from .mat_to_dict import loadmat
+from pymongo import MongoClient
 from bokeh.layouts import gridplot
 from bokeh.models import ColumnDataSource, Span, Label
 from bokeh.palettes import Reds4, Blues4
 from bokeh.plotting import figure
+
+
+
 
 # Columns name
 
@@ -39,7 +44,11 @@ def generateEyeDF(eye):
 
 # assemble data in all neurons
 
-def assembleData(directory):
+def assembleData(directory, args):
+
+    client = MongoClient("mongodb://" + args.host + ':' + args.port)
+    preProcDB = client.preProccesing
+
     dirr = directory
     os.chdir(dirr)
     iter = 0
@@ -52,6 +61,7 @@ def assembleData(directory):
         filename = os.fsdecode(file)
         if filename.endswith('.mat'):
             print('File:' + filename)
+            preProcDB['Raw_Data'].insert_one(loadmat(filename).get('Res'))
             matData = sio.loadmat(filename)
             dictVal = matData.get('Res')
             Eye = dictVal['Eye']
@@ -216,6 +226,44 @@ def computerSpkCountAll(neurons_df, period):
     return sep_by_cond
 
 
+def computerFrAllDict(neurons_df):
+    lend = len(neurons_df)
+    saccade_data_frame = saccade_df(neurons_df)
+    sep_by_cond = []
+
+    for it in range(lend):
+
+        inStimDF = conditionSelect(saccade_data_frame[it], 'inStim')
+        outStimDF = conditionSelect(saccade_data_frame[it], 'outStim')
+        inNoStimDF = conditionSelect(saccade_data_frame[it], 'inNoStim')
+        outNoStimDF = conditionSelect(saccade_data_frame[it],
+                'outNoStim')
+
+        sep_by_cond.append({'visual': {
+            'inStim': computeFr(conditionSelect(neurons_df[it], 'inStim'
+                                ), 0, 3000).to_dict('list'),
+            'outStim': computeFr(conditionSelect(neurons_df[it],
+                                 'outStim'), 0, 3000).to_dict('list'),
+            'inNoStim': computeFr(conditionSelect(neurons_df[it],
+                                  'inNoStim'), 0, 3000).to_dict('list'
+                    ),
+            'outNoStim': computeFr(conditionSelect(neurons_df[it],
+                                   'outNoStim'), 0, 3000).to_dict('list'
+                    ),
+            }, 'saccade': {
+            'inStim': computeFr(inStimDF, 0,
+                                saccade_data_frame[it].columns.get_loc('Cond'
+                                ) - 1).to_dict('list'),
+            'outStim': computeFr(outStimDF, 0,
+                                 saccade_data_frame[it].columns.get_loc('Cond'
+                                 ) - 1).to_dict('list'),
+            'inNoStim': computeFr(inNoStimDF, 0,
+                                  saccade_data_frame[it].columns.get_loc('Cond'
+                                  ) - 1).to_dict('list'),
+            'outNoStim': computeFr(outNoStimDF, 0,
+                                   saccade_data_frame[it].columns.get_loc('Cond'
+                                   ) - 1).to_dict('list'),
+            }})
 
 
 """
