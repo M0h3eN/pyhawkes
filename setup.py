@@ -27,7 +27,7 @@ for e in ext_modules:
     e.extra_link_args.extend(extra_link_args)
 
 setup(name='pyhawkes',
-      version='0.3.1',
+      version='0.3.2',
       description='Bayesian inference for network Hawkes processes',
       ext_modules=ext_modules,
       install_requires=['scipy', 'matplotlib','selenium',
@@ -35,5 +35,5 @@ setup(name='pyhawkes',
                         'plotly', 'networkx', 'bokeh', 'pandas',
                         'gslrandom', 'autograd', 'pymongo', 'psutil'],
       include_dirs=[np.get_include(),],
-      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'dataImport', 'graphistician']
+      packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'graphistician']
      )

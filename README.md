@@ -37,6 +37,7 @@ npm install --unsafe-perm -g phantomjs-prebuilt
 #!/bin/bash
 xvfb-run -a /root/Downloads/orca-1.2.1-x86_64.AppImage "$@"
 ```
+* cp it in /bin
 ## Run Cisco Any connect and prevent to killing ssh session
 
 ```bash
@@ -49,8 +50,6 @@ route add -host 'client public ip' gw 'SERVER DEFUALT GATEWAY'
 yum install https://centos7.iuscommunity.org/ius-release.rpm
 yum install python36u python36u-pip  python36u-devel
 ```
-
-* cp it in /bin
 
 # Compile setup.py file
 
