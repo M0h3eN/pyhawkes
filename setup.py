@@ -31,9 +31,12 @@ setup(name='pyhawkes',
       description='Bayesian inference for network Hawkes processes',
       ext_modules=ext_modules,
       install_requires=['scipy', 'matplotlib',
-                        'joblib', 'scikit-learn', 'pybasicbayes',
+                        'joblib', 'scikit-learn',
                         'plotly', 'networkx', 'bokeh', 'pandas',
                         'gslrandom', 'autograd', 'pymongo', 'psutil'],
       include_dirs=[np.get_include(),],
       packages=['pyhawkes', 'pyhawkes.internals', 'pyhawkes.utils', 'graphistician']
      )
+
+
+
