@@ -27,7 +27,7 @@ for e in ext_modules:
     e.extra_link_args.extend(extra_link_args)
 
 setup(name='pyhawkes',
-      version='0.3.2',
+      version='0.3.3',
       description='Bayesian inference for network Hawkes processes',
       ext_modules=ext_modules,
       install_requires=['scipy', 'matplotlib',
