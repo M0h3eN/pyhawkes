@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import numpy as np
 np.random.seed(1111)
 import matplotlib.pyplot as plt
